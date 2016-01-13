@@ -1,3 +1,8 @@
+####################################################################
+## Please consult the ARC Information System manual for detailed information
+## on queue attributes:
+##   http://www.nordugrid.org/documents/arc_infosys.pdf
+####################################################################
 [infosys]
 user="root"
 overwrite_config="yes"
@@ -5,10 +10,10 @@ port="2135"
 debug="0"
 slapd_loglevel="0"
 threads="32"
-timelimit="3600"
+timelimit="1800"
 infoproviders_timeout="1200"
-registrationlog="<%= log_directory %>/inforegistration.log"
-providerlog="<%= log_directory %>/infoprovider.log"
+registrationlog="<%= @log_directory %>/inforegistration.log"
+providerlog="<%= @log_directory %>/infoprovider.log"
 provider_loglevel="3"
 bdii_delete_delay=0
 <%if @enable_glue2 == true then -%>
@@ -27,27 +32,31 @@ bdii_run_dir="/var/run/arc/bdii"
 <%if @enable_glue1 == true then -%>
 ##TODO: add them to config parameters
 [infosys/glue12]
-resource_location="<%= resource_location %>"
-resource_latitude=<%= resource_latitude %>
-resource_longitude=<%= resource_longitude %>
-cpu_scaling_reference_si00="3100"
-processor_other_description="Cores=<%= @cores_per_worker %>,Benchmark=<%= hepspec_per_core %>-HEP-SPEC06"
-glue_site_web="<%= glue_site_web %>"
-glue_site_unique_id="<%= domain_name %>"
+resource_location="<%= @resource_location %>"
+resource_latitude=<%= @resource_latitude %>
+resource_longitude=<%= @resource_longitude %>
+cpu_scaling_reference_si00=<%= @cpu_scaling_reference_si00 %>
+processor_other_description="Cores=<%= @cores_per_worker %>,Benchmark=<%= @hepspec_per_core %>-HEP-SPEC06"
+glue_site_web="<%= @glue_site_web %>"
+glue_site_unique_id="<%= @domain_name %>"
 provide_glue_site_info="false"
 
 [infosys/site/sitename]
-unique_id="<%= domain_name %>"
+unique_id="<%= @fqdn %>"
 url="ldap://localhost:2135/mds-vo-name=resource,o=grid"
 <% end -%>
 
 [infosys/admindomain]
-name="<%= domain_name %>"
+name="<%= @domain_name %>"
 
 #cluster registration block
-[infosys/cluster/registration/clustertoukglasgow]
-targethostname="svr019.gla.scotgrid.ac.uk"
-targetport="2135"
-targetsuffix="Mds-Vo-Name=UK,o=grid"
-regperiod="120"
+<% @infosys_registration.keys.sort.each do |key| -%>
+<% value = @infosys_registration[key] -%>
+[infosys/cluster/registration/<%= key %>]
+targethostname="<%= value['targethostname'] %>"
+targetport="<%= value['targetport'] %>"
+targetsuffix="<%= value['targetsuffix'] %>"
+regperiod="<%= value['regperiod'] %>"
+
+<% end %>
 
